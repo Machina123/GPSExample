@@ -9,39 +9,51 @@
         <script src="http://code.jquery.com/mobile/1.3.2/jquery.mobile-1.3.2.min.js"></script>
         <title>Hello World</title>
 
+        <script type="text/javascript" src="cordova.js"></script>
+
         <script>
 
             document.addEventListener("deviceready", onDevice, false);
+
+            var geoOptions = {
+
+                maximumAge: 5000,
+                timeout: 60000,
+                enableHighAccuracy: true
+
+            }
 
             function onDevice() {
                 alert("Cordova/Phonegap działa!")
             }
 
             $(document).ready(function () {
-                //alert("JQueryMobile działa!");
-                var x = 3;
-                /*
-
-                for (var i = 0; i < 10; i++) {
-                    $("#lista").append("<li>" + (i+1) + "</li>"); //dodawanie wiersza na koniec listy
-                }
-
-                for (var j = 0; j < 5; j++) {
-                    $("#lista").prepend("<li>" + j + "</li>")
-                }
-                $("#lista").listview("refresh");
-
-                */
+                $("#btn1").click(function () {
+                    //alert("button działa");\
+                    navigator.geolocation.getCurrentPosition(onGPSSuccess, onGPSError, geoOptions);
+                });
             });
 
+            function onGPSSuccess(position) {
+                $("#lista").html("");
+                $("#lista").append("<li>Szerokość: " + position.coords.latitude + "</li>");
+                $("#lista").append("<li>Długość: " + position.coords.longitude + "</li>");
+                $("#lista").append("<li>Wysokość: " + position.coords.altitude + "</li>");
+                $("#lista").listview("refresh");
+            }
+
+            function onGPSError(errCode) {
+                alert("Błąd: " + errCode);
+            }
         </script>
     </head>
     <body>
         <div class="app">
+            <button id="btn1">Pobierz pozycję jednorazowo</button>
             <ul id="lista" data-role="listview">
 
             </ul>
         </div>
-        <!--<script type="text/javascript" src="cordova.js"></script>-->
+        
     </body>
 </html>
