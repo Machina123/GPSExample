@@ -1,59 +1,139 @@
 ﻿<!DOCTYPE html>
 <html>
-    <head>
-        <meta charset="utf-8" />
-        <meta name="format-detection" content="telephone=no" />
-        <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width, height=device-height, target-densitydpi=device-dpi" />
-        <link rel="stylesheet" href="http://code.jquery.com/mobile/1.3.2/jquery.mobile-1.3.2.min.css" />
-        <script src="http://code.jquery.com/jquery-1.9.1.min.js"></script>
-        <script src="http://code.jquery.com/mobile/1.3.2/jquery.mobile-1.3.2.min.js"></script>
-        <title>Hello World</title>
+<head>
+    <meta charset="utf-8" />
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width, height=device-height, target-densitydpi=device-dpi" />
+    <link rel="stylesheet" href="http://code.jquery.com/mobile/1.3.2/jquery.mobile-1.3.2.min.css" />
+    <script src="http://code.jquery.com/jquery-1.9.1.min.js"></script>
+    <script src="http://code.jquery.com/mobile/1.3.2/jquery.mobile-1.3.2.min.js"></script>
+    <title>Hello World</title>
+    <style>
+        body {
+            overflow: hidden;
+        }
+    </style>
+    <script type="text/javascript" src="cordova.js"></script>
 
-        <script type="text/javascript" src="cordova.js"></script>
+    <script>
 
-        <script>
+        document.addEventListener("deviceready", onDevice, false);
 
-            document.addEventListener("deviceready", onDevice, false);
+        var id;
 
-            var geoOptions = {
+        var db = localStorage;
+        var posArr = new Array();
 
-                maximumAge: 5000,
-                timeout: 60000,
-                enableHighAccuracy: true
+        var geoOptions = {
 
-            }
+            maximumAge: 5000,
+            timeout: 5000,
+            enableHighAccuracy: true
 
-            function onDevice() {
-                alert("Cordova/Phonegap działa!")
-            }
+        }
 
-            $(document).ready(function () {
-                $("#btn1").click(function () {
-                    //alert("button działa");\
-                    navigator.geolocation.getCurrentPosition(onGPSSuccess, onGPSError, geoOptions);
-                });
+        function onDevice() {
+            alert("Cordova/Phonegap działa!")
+        }
+
+        $(document).ready(function () {
+            $("#btn1").click(function () {
+                //alert("button działa");\
+                navigator.geolocation.getCurrentPosition(onGPSSuccessSingle, onGPSError, geoOptions);
             });
 
-            function onGPSSuccess(position) {
-                $("#lista").html("");
-                $("#lista").append("<li>Szerokość: " + position.coords.latitude + "</li>");
-                $("#lista").append("<li>Długość: " + position.coords.longitude + "</li>");
-                $("#lista").append("<li>Wysokość: " + position.coords.altitude + "</li>");
-                $("#lista").listview("refresh");
-            }
 
-            function onGPSError(errCode) {
-                alert("Błąd: " + errCode);
-            }
-        </script>
-    </head>
-    <body>
-        <div class="app">
-            <button id="btn1">Pobierz pozycję jednorazowo</button>
-            <ul id="lista" data-role="listview">
+            $("#btn2").click(function () {
+                id = navigator.geolocation.watchPosition(onGPSSuccess, onGPSError, geoOptions);
+                navigator.notification.alert("Włączono monitorowanie", void (0), "Informacja", "OK");
+            });
 
-            </ul>
+            $("#btn3").click(function () {
+                navigator.geolocation.clearWatch(id);
+                navigator.notification.alert("Wyłączono monitorowanie", void (0), "Informacja", "OK");
+            });
+
+            $("#btn4").click(function () {
+                $("#listaPoz").html("");
+
+                navigator.notification.alert("Wyczyszczono historię", void (0), "Informacja", "OK");
+            });
+
+            $("#exitBtn").click(function () {
+                window.confirm = navigator.notification.confirm;
+
+                confirm("Czy chcesz wyjść?", quitApp, "Koniec", [Tak, Nie]);
+            });
+        });
+
+
+
+        function onGPSSuccess(position) {
+            $("#listaPoz").append("<li><h2>Time: " + Date.now.toString() + "</h2><br />Lat: " + postiion.coords.latitude + "<br /> Lon: " + position.coords.longitude + "</li>");
+            $("#listaPoz").listview("refresh");
+        }
+
+        function onGPSError(errCode) {
+            alert("Błąd: " + errCode.code);
+        }
+
+        function quitApp() {
+            navigator.app.exitApp();
+        }
+
+        function onGPSSuccessSingle(position) {
+            $("#pozycja").html("");
+            $("#pozycja").append("<li><h2>Time: " + Date.now.toString() + "</h2><br />Lat: " + postiion.coords.latitude + "<br /> Lon: " + position.coords.longitude + "</li>");
+            $("#pozycja").listview("refresh");
+        }
+    </script>
+</head>
+<body>
+    <div class="app">
+        <div id="main" data-role="page">
+            <div data-role="header">
+                <h1>GPS</h1>
+                <div data-role="navbar">
+                    <ul>
+                        <li class="ui-btn-active"><a href="#main">Strona główna</a></li>
+                        <li><a href="#lista">Historia pozycji</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div data-role="content">
+                <button id="btn1">Pobierz pozycję jednorazowo</button>
+                <button id="btn2">Monitoruj pozycję</button>
+                <button id="btn3">Wyłącz monitorowanie</button>
+                <button id="btn4">Czyść historię</button>
+                <ul id="pozycja" data-role="listview"></ul>
+            </div>
+
+            <div data-role="footer" data-position="fixed">
+                <button id="exitBtn" data-icon="delete" data-iconpos="left">Koniec</button>
+            </div>
         </div>
-        
-    </body>
+
+        <div id="lista" data-role="page">
+            <div data-role="header">
+                <h1>GPS</h1>
+                <div data-role="navbar">
+                    <ul>
+                        <li><a href="#main">Strona główna</a></li>
+                        <li class="ui-btn-active"><a href="#lista">Historia pozycji</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div data-role="content">
+                <ul id="listaPoz" data-role="listview"></ul>
+            </div>
+
+            <div data-role="footer" data-position="fixed">
+                <button id="exitBtn" data-icon="delete" data-iconpos="left">Koniec</button>
+            </div>
+        </div>
+    </div>
+
+</body>
 </html>
